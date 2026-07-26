@@ -1,3 +1,7 @@
+<!-- ============================================================ -->
+<!--  INDEX.HTML – AQUORA Luxury Beverage Website                  -->
+<!--  Follows MotionSites design with AQUORA branding and local assets -->
+<!-- ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,14 +22,16 @@
   <!-- ====== FIXED NAVIGATION ====== -->
   <nav class="navbar" id="navbar">
     <div class="nav-left">
-      <img src="images/logo.png" alt="AQUORA" class="nav-logo" />
+      <img src="assets/logo/logo.png" alt="AQUORA" class="nav-logo" />
       <span class="nav-wordmark">AQUORA</span>
     </div>
 
     <div class="nav-center" id="navCenter">
       <a href="#home" class="nav-link active">Home</a>
       <a href="#about" class="nav-link">About</a>
+      <a href="#story" class="nav-link">Story</a>
       <a href="#products" class="nav-link">Products</a>
+      <a href="#gallery" class="nav-link">Gallery</a>
       <a href="#ingredients" class="nav-link">Ingredients</a>
       <a href="#benefits" class="nav-link">Benefits</a>
       <a href="#testimonials" class="nav-link">Testimonials</a>
@@ -44,10 +50,10 @@
   <!-- ====== HERO SECTION ====== -->
   <section class="hero" id="home" style="height:100dvh;">
     <!-- Base image -->
-    <div class="hero-base hero-zoom" style="background-image:url('images/hero-main.webp');"></div>
+    <div class="hero-base hero-zoom" style="background-image:url('assets/hero/hero-background.jpg');"></div>
 
     <!-- Reveal layer -->
-    <div class="hero-reveal-layer" id="heroRevealLayer" style="background-image:url('images/hero-reveal.webp');"></div>
+    <div class="hero-reveal-layer" id="heroRevealLayer" style="background-image:url('assets/hero/hero-can.png');"></div>
 
     <!-- Canvas for spotlight mask -->
     <canvas class="hero-canvas" id="heroCanvas"></canvas>
@@ -76,7 +82,7 @@
   <section class="about" id="about">
     <div class="about-grid">
       <div class="about-image">
-        <img src="images/about.webp" alt="AQUORA luxury beverage" loading="lazy" />
+        <img src="assets/lifestyle/lifestyle1.jpg" alt="AQUORA luxury beverage" loading="lazy" />
       </div>
       <div class="about-content">
         <span class="about-tag">About AQUORA</span>
@@ -92,6 +98,22 @@
     </div>
   </section>
 
+  <!-- ====== BRAND STORY SECTION ====== -->
+  <section class="story" id="story">
+    <div class="story-inner">
+      <div class="story-image">
+        <img src="assets/lifestyle/lifestyle2.jpg" alt="AQUORA brand story" loading="lazy" />
+      </div>
+      <div class="story-content">
+        <span class="story-tag">Our Legacy</span>
+        <h2>A Story of Purity &amp; Passion</h2>
+        <p>From the rolling hills of Tuscany to the lush valleys of Japan, we handpick the most exquisite ingredients. Each AQUORA creation is a journey — a narrative of flavour, heritage, and the relentless pursuit of perfection.</p>
+        <p>We believe that what you drink should be as remarkable as who you are. That's why every bottle is crafted with care, ensuring that every drop carries the essence of excellence.</p>
+        <a href="#products" class="story-btn">Explore the Range</a>
+      </div>
+    </div>
+  </section>
+
   <!-- ====== PRODUCTS SECTION ====== -->
   <section class="products" id="products">
     <div class="products-header">
@@ -101,6 +123,21 @@
     </div>
     <div class="products-grid" id="productsGrid">
       <!-- Cards injected by JS -->
+    </div>
+  </section>
+
+  <!-- ====== GALLERY SECTION ====== -->
+  <section class="gallery" id="gallery">
+    <div class="gallery-header">
+      <span class="gallery-tag">Visual Story</span>
+      <h2>Captured in Every Drop</h2>
+      <p>Explore the artistry behind AQUORA through our curated gallery of moments and craftsmanship.</p>
+    </div>
+    <div class="gallery-grid">
+      <img src="assets/gallery/gallery1.jpg" alt="AQUORA gallery 1" loading="lazy" />
+      <img src="assets/gallery/gallery2.jpg" alt="AQUORA gallery 2" loading="lazy" />
+      <img src="assets/gallery/gallery3.jpg" alt="AQUORA gallery 3" loading="lazy" />
+      <img src="assets/gallery/gallery4.jpg" alt="AQUORA gallery 4" loading="lazy" />
     </div>
   </section>
 
@@ -187,11 +224,11 @@
 
   <!-- ====== FOOTER ====== -->
   <footer class="footer" id="footer">
-    <div class="footer-bg" style="background-image:url('images/footer-bg.webp');"></div>
+    <div class="footer-bg" style="background-image:url('assets/footer-bg.webp');"></div>
     <div class="footer-content">
       <div class="footer-top">
         <div class="footer-brand">
-          <img src="images/logo.png" alt="AQUORA" />
+          <img src="assets/logo/logo.png" alt="AQUORA" />
           <span>AQUORA</span>
           <p>Crafted for the Crowned Within You</p>
         </div>
@@ -200,8 +237,8 @@
             <h4>Quick Links</h4>
             <a href="#home">Home</a>
             <a href="#about">About</a>
+            <a href="#story">Story</a>
             <a href="#products">Products</a>
-            <a href="#ingredients">Ingredients</a>
           </div>
           <div>
             <h4>Products</h4>
