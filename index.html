@@ -4,359 +4,505 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes" />
   <title>AQUORA SHAKE · Crown Your Moment</title>
-
-  <!-- Google Fonts & Icons -->
+  <!-- fonts & icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <!-- Three.js core & addons -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
+      }
+    }
+  </script>
+  <style>
+    /* reset & base */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #081321;
+      color: #fff;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+    }
+    a { text-decoration: none; color: inherit; }
+    img { display: block; max-width: 100%; }
 
-  <!-- Three.js (CDN) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    /* loading screen */
+    #loader {
+      position: fixed; inset: 0; background: #081321; z-index: 10000;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      transition: opacity 1.2s ease;
+    }
+    #loader.hide { opacity: 0; pointer-events: none; }
+    .loader-logo {
+      font-size: 3rem; font-weight: 300; letter-spacing: 0.3em;
+      background: linear-gradient(135deg, #D4AF37, #f9e6b3);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 1.2rem;
+    }
+    .loader-progress {
+      width: 180px; height: 2px; background: rgba(212, 175, 55, 0.2); border-radius: 10px; overflow: hidden;
+    }
+    .loader-progress-bar {
+      width: 0%; height: 100%; background: linear-gradient(90deg, #D4AF37, #f9e6b3);
+      transition: width 0.3s ease;
+    }
+    .loader-percent {
+      margin-top: 0.6rem; font-size: 0.8rem; color: #D4AF37; letter-spacing: 0.2em;
+    }
 
-  <!-- GSAP + ScrollTrigger + Lenis -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-  <script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
+    /* navigation */
+    nav {
+      position: fixed; top: 0; left: 0; width: 100%; padding: 0.8rem 3rem;
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(8, 19, 33, 0.5); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(212, 175, 55, 0.15); z-index: 999;
+      transition: 0.3s ease;
+    }
+    .logo-area {
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+    .logo-icon {
+      width: 40px; height: 40px; background: rgba(212, 175, 55, 0.2); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; font-size: 1.6rem;
+      border: 1px solid rgba(212, 175, 55, 0.4); color: #D4AF37;
+    }
+    /* --- NEW: logo image --- */
+    .logo-img {
+      height: 40px;
+      width: auto;
+    }
+    .logo-text {
+      font-size: 1.3rem; font-weight: 300; letter-spacing: 0.2em;
+      background: linear-gradient(135deg, #fff, #D4AF37); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .nav-links {
+      display: flex; gap: 2.2rem; font-size: 0.85rem; font-weight: 400; letter-spacing: 0.05em;
+    }
+    .nav-links a { position: relative; color: rgba(255,255,255,0.7); transition: 0.3s; }
+    .nav-links a::after {
+      content: ''; position: absolute; bottom: -4px; left: 0; width: 0%; height: 1px;
+      background: #D4AF37; transition: 0.4s;
+    }
+    .nav-links a:hover { color: #fff; }
+    .nav-links a:hover::after { width: 100%; }
+    .hamburger { display: none; flex-direction: column; gap: 4px; cursor: pointer; }
+    .hamburger span { width: 24px; height: 1.5px; background: #fff; transition: 0.3s; }
+    .mobile-menu {
+      position: fixed; inset: 0; background: rgba(8, 19, 33, 0.96); backdrop-filter: blur(20px);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2rem;
+      z-index: 998; opacity: 0; pointer-events: none; transition: 0.5s ease;
+    }
+    .mobile-menu.open { opacity: 1; pointer-events: all; }
+    .mobile-menu a { font-size: 1.8rem; font-weight: 200; letter-spacing: 0.15em; color: #fff; }
 
-  <!-- Main Styles -->
-  <link rel="stylesheet" href="style.css" />
+    /* sections general */
+    section { padding: 5rem 6%; position: relative; }
+    .gold-text { color: #D4AF37; }
+    .gold-border { border-bottom: 1px solid rgba(212, 175, 55, 0.2); }
+    .glass-card {
+      background: rgba(255,255,255,0.03); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(212, 175, 55, 0.15); border-radius: 28px; box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+    }
+
+    /* hero */
+    #hero {
+      min-height: 100vh; display: flex; align-items: center; padding-top: 80px;
+      background: radial-gradient(circle at 20% 30%, #0B1638, #081321 80%);
+      position: relative; overflow: hidden;
+    }
+    .hero-content {
+      flex: 1; z-index: 5; padding-right: 2rem;
+    }
+    .hero-badge {
+      display: inline-block; background: rgba(212, 175, 55, 0.15); padding: 0.3rem 1.2rem;
+      border-radius: 40px; font-size: 0.7rem; letter-spacing: 0.2em; color: #D4AF37;
+      border: 1px solid rgba(212, 175, 55, 0.3); margin-bottom: 1.5rem;
+    }
+    .hero-title {
+      font-size: clamp(3rem, 10vw, 6rem); font-weight: 300; line-height: 1.1; letter-spacing: -0.02em;
+    }
+    .hero-title span { background: linear-gradient(135deg, #fff, #D4AF37); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero-sub {
+      font-size: 1.2rem; color: rgba(255,255,255,0.7); max-width: 480px; margin: 1.5rem 0 2.5rem;
+      font-weight: 300; letter-spacing: 0.02em;
+    }
+    .hero-cta { display: flex; gap: 1.2rem; flex-wrap: wrap; }
+    .btn-primary {
+      background: #D4AF37; color: #081321; padding: 0.8rem 2.2rem; border-radius: 60px;
+      font-weight: 500; letter-spacing: 0.05em; border: none; transition: 0.3s; box-shadow: 0 0 20px rgba(212,175,55,0.2);
+    }
+    .btn-primary:hover { transform: scale(1.03); box-shadow: 0 0 40px rgba(212,175,55,0.4); }
+    .btn-outline {
+      background: transparent; color: #fff; padding: 0.8rem 2.2rem; border-radius: 60px;
+      border: 1px solid rgba(255,255,255,0.3); transition: 0.3s; backdrop-filter: blur(4px);
+    }
+    .btn-outline:hover { border-color: #D4AF37; color: #D4AF37; }
+    .hero-3d {
+      flex: 1; min-height: 400px; position: relative; z-index: 5;
+    }
+    #three-canvas {
+      width: 100%; height: 500px; border-radius: 40px;
+      background: rgba(0,0,0,0.2); backdrop-filter: blur(4px);
+    }
+    .scroll-indicator {
+      position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 0.4rem; color: rgba(255,255,255,0.4);
+      font-size: 0.7rem; letter-spacing: 0.2em; animation: bounceDown 2s infinite;
+    }
+    @keyframes bounceDown { 0%,100%{transform:translateX(-50%) translateY(0);} 50%{transform:translateX(-50%) translateY(8px);} }
+
+    /* flavour cards */
+    .flavour-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap: 2rem; margin-top: 2rem;
+    }
+    .flavour-card {
+      padding: 1.8rem; border-radius: 32px; background: rgba(255,255,255,0.02); backdrop-filter: blur(8px);
+      border: 1px solid rgba(212, 175, 55, 0.1); transition: 0.4s; text-align: center;
+    }
+    .flavour-card:hover { transform: translateY(-10px); border-color: #D4AF37; box-shadow: 0 20px 40px rgba(0,0,0,0.6); }
+    .flavour-img { height: 120px; display: flex; align-items: center; justify-content: center; font-size: 3rem; color: #D4AF37; }
+
+    /* gallery masonry */
+    .gallery-masonry {
+      display: grid; grid-template-columns: repeat(4,1fr); grid-auto-rows: 180px; gap: 12px;
+    }
+    .gallery-item {
+      background: rgba(255,255,255,0.02); border-radius: 24px; border: 1px solid rgba(212,175,55,0.1);
+      display: flex; align-items: center; justify-content: center; font-size: 0.9rem; color: rgba(255,255,255,0.3);
+      transition: 0.3s; overflow: hidden; backdrop-filter: blur(4px);
+      position: relative;
+    }
+    .gallery-item img {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform 0.3s;
+    }
+    .gallery-item:hover img { transform: scale(1.05); }
+    .gallery-item .gallery-overlay {
+      position: absolute; inset: 0; background: rgba(0,0,0,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem; color: rgba(255,255,255,0.8);
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .gallery-item:hover .gallery-overlay { opacity: 1; }
+    .gallery-item:nth-child(1) { grid-row: span 2; }
+    .gallery-item:nth-child(3) { grid-column: span 2; }
+
+    /* responsive */
+    @media (max-width: 1024px) {
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+      #hero { flex-direction: column; text-align: center; padding: 120px 1.5rem 4rem; }
+      .hero-content { padding-right: 0; }
+      .hero-cta { justify-content: center; }
+      .hero-3d { width: 100%; margin-top: 2rem; }
+      #three-canvas { height: 360px; }
+      .gallery-masonry { grid-template-columns: repeat(2,1fr); }
+    }
+    @media (max-width: 600px) {
+      nav { padding: 0.6rem 1.2rem; }
+      .gallery-masonry { grid-template-columns: 1fr; grid-auto-rows: 160px; }
+      .flavour-grid { grid-template-columns: 1fr; }
+    }
+
+    /* utilities */
+    .section-title { font-size: 2.6rem; font-weight: 300; letter-spacing: -0.02em; margin-bottom: 0.6rem; }
+    .section-sub { color: rgba(255,255,255,0.5); font-weight: 300; letter-spacing: 0.1em; }
+    .mt-4 { margin-top: 2rem; }
+    .text-center { text-align: center; }
+    .gap-4 { gap: 1.5rem; }
+
+    /* footer */
+    footer {
+      background: #050f1a; padding: 3rem 6%; border-top: 1px solid rgba(212,175,55,0.1);
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 2rem;
+    }
+    .footer-col h4 { color: #D4AF37; font-weight: 400; margin-bottom: 1rem; }
+    .footer-col a { display: block; color: rgba(255,255,255,0.5); margin-bottom: 0.4rem; font-size: 0.9rem; }
+    .footer-col a:hover { color: #fff; }
+    .newsletter input { background: rgba(255,255,255,0.05); border: 1px solid rgba(212,175,55,0.2); padding: 0.6rem 1rem; border-radius: 40px; width: 100%; color: #fff; }
+
+    /* floating particles (golden) */
+    .particle-gold {
+      position: absolute; width: 4px; height: 4px; background: #D4AF37; border-radius: 50%; opacity: 0.3;
+      filter: blur(1px); pointer-events: none;
+    }
+  </style>
 </head>
 <body>
-
-  <!-- ====== LOADING SCREEN ====== -->
+  <!-- LOADER -->
   <div id="loader">
     <div class="loader-logo">✦ AQUORA</div>
-    <div class="loader-progress">
-      <div class="loader-progress-bar" id="loaderBar"></div>
-    </div>
+    <div class="loader-progress"><div class="loader-progress-bar" id="loaderBar"></div></div>
     <div class="loader-percent" id="loaderPercent">0%</div>
   </div>
 
-  <!-- ====== NAVIGATION ====== -->
+  <!-- NAV -->
   <nav>
     <div class="logo-area">
-      <div class="logo-icon"><i class="fas fa-droplet"></i></div>
+      <!-- Logo image placeholder -->
+      <img src="assets/images/logo.png" alt="AQUORA SHAKE Logo" class="logo-img" />
+      <!-- or keep icon + text -->
+      <!-- <div class="logo-icon"><i class="fas fa-droplet"></i></div> -->
       <span class="logo-text">AQUORA</span>
     </div>
     <div class="nav-links">
-      <a href="#about">About</a>
-      <a href="#story">Story</a>
       <a href="#flavours">Flavours</a>
+      <a href="#story">Story</a>
       <a href="#gallery">Gallery</a>
-      <a href="#reviews">Reviews</a>
       <a href="#contact">Contact</a>
     </div>
-    <div class="hamburger" id="hamburger">
-      <span></span><span></span><span></span>
-    </div>
+    <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
   </nav>
-
-  <!-- Mobile Menu -->
   <div class="mobile-menu" id="mobileMenu">
-    <a href="#about">About</a>
-    <a href="#story">Story</a>
     <a href="#flavours">Flavours</a>
+    <a href="#story">Story</a>
     <a href="#gallery">Gallery</a>
-    <a href="#reviews">Reviews</a>
     <a href="#contact">Contact</a>
   </div>
 
-  <!-- ====== HERO ====== -->
+  <!-- HERO -->
   <section id="hero">
     <div class="hero-content">
       <div class="hero-badge">✦ 2026 COLLECTION</div>
       <h1 class="hero-title">Crown Your <span>Moment</span></h1>
       <p class="hero-sub">Crafted for the crowned within you. Luxury in every sip.</p>
       <div class="hero-cta">
-        <button class="btn-primary" onclick="document.getElementById('flavours').scrollIntoView({behavior:'smooth'})">Explore Flavours</button>
-        <button class="btn-outline" onclick="document.getElementById('story').scrollIntoView({behavior:'smooth'})">Watch Story</button>
+        <button class="btn-primary">Explore Flavours</button>
+        <button class="btn-outline">Watch Story</button>
       </div>
     </div>
     <div class="hero-3d">
       <div id="three-canvas"></div>
     </div>
-    <div class="scroll-indicator">
-      <span>SCROLL</span>
-      <i class="fas fa-chevron-down"></i>
-    </div>
+    <div class="scroll-indicator"><span>SCROLL</span><i class="fas fa-chevron-down"></i></div>
   </section>
 
-  <!-- ====== ABOUT ====== -->
-  <section id="about" class="section-padding gold-border" style="background:var(--color-secondary);">
-    <div class="text-center">
-      <h2 class="section-title">The <span class="gold-text">Essence</span> of Luxury</h2>
-      <p class="section-sub">Where nature meets refinement</p>
-    </div>
-    <div class="about-grid">
-      <div class="about-text">
-        <p>AQUORA SHAKE was born from a vision to redefine hydration. We combine the finest natural ingredients with cutting‑edge technology to create a beverage that transcends the ordinary. Every drop is a testament to our commitment to purity, taste, and elegance.</p>
-        <p>Our philosophy is simple: <span class="gold-text">nature’s best</span>, crafted with precision, presented with grace.</p>
-        <button class="btn-primary" style="margin-top:1.5rem;">Discover Our Story</button>
-      </div>
-      <div class="about-image glass-card">
-        <i class="fas fa-droplet" style="font-size:4rem; color:var(--color-accent);"></i>
-        <p style="margin-top:1rem; color:var(--color-text-muted);">Pure · Natural · Premium</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- ====== STORY / TIMELINE ====== -->
-  <section id="story" class="section-padding gold-border">
-    <div class="text-center">
-      <h2 class="section-title">Our <span class="gold-text">Journey</span></h2>
-      <p class="section-sub">From vision to reality</p>
-    </div>
-    <div class="timeline">
-      <div class="timeline-item">
-        <div class="timeline-icon"><i class="fas fa-eye"></i></div>
-        <div><h3>Vision</h3><p>To redefine luxury hydration with nature’s finest.</p></div>
-      </div>
-      <div class="timeline-item">
-        <div class="timeline-icon"><i class="fas fa-seedling"></i></div>
-        <div><h3>Ingredients</h3><p>100% natural, sustainably sourced from around the globe.</p></div>
-      </div>
-      <div class="timeline-item">
-        <div class="timeline-icon"><i class="fas fa-flask"></i></div>
-        <div><h3>Quality</h3><p>Triple‑filtered, cold‑pressed, and crafted with precision.</p></div>
-      </div>
-      <div class="timeline-item">
-        <div class="timeline-icon"><i class="fas fa-gem"></i></div>
-        <div><h3>Packaging</h3><p>Eco‑luxury glass bottles wrapped in gold foil.</p></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ====== FLAVOURS ====== -->
-  <section id="flavours" class="section-padding gold-border" style="background:var(--color-secondary);">
-    <div class="text-center">
-      <h2 class="section-title">Crafted <span class="gold-text">Collection</span></h2>
-      <p class="section-sub">Each flavour, a masterpiece</p>
-    </div>
+  <!-- FLAVOURS -->
+  <section id="flavours" class="gold-border">
+    <div class="text-center"><h2 class="section-title">Crafted <span class="gold-text">Collection</span></h2><p class="section-sub">Each flavour, a masterpiece</p></div>
     <div class="flavour-grid">
       <div class="flavour-card">
         <div class="flavour-img"><i class="fas fa-ice-cream"></i></div>
         <h3>Vanilla Bliss</h3>
-        <p>Madagascar vanilla · oat milk</p>
-        <button class="btn-primary" onclick="switchFlavour('Vanilla Bliss')">View in 3D</button>
+        <p style="color:rgba(255,255,255,0.6);">Madagascar vanilla, oat milk</p>
+        <button class="btn-primary" style="margin-top:1rem; padding:0.5rem 1.6rem; font-size:0.8rem;">View in 3D</button>
       </div>
       <div class="flavour-card">
         <div class="flavour-img"><i class="fas fa-seedling"></i></div>
         <h3>Choco Nut Blend</h3>
-        <p>Dark cocoa · hazelnut · almond</p>
-        <button class="btn-primary" onclick="switchFlavour('Choco Nut Blend')">View in 3D</button>
+        <p style="color:rgba(255,255,255,0.6);">Dark cocoa, hazelnut, almond</p>
+        <button class="btn-primary" style="margin-top:1rem; padding:0.5rem 1.6rem; font-size:0.8rem;">View in 3D</button>
       </div>
       <div class="flavour-card">
         <div class="flavour-img"><i class="fas fa-gem"></i></div>
         <h3>Golden Mango</h3>
-        <p>Alphonso · turmeric · ginger</p>
-        <button class="btn-primary" onclick="switchFlavour('Golden Mango')">View in 3D</button>
-      </div>
-      <div class="flavour-card">
-        <div class="flavour-img"><i class="fas fa-mug-saucer"></i></div>
-        <h3>Matcha Zen</h3>
-        <p>Ceremonial matcha · coconut</p>
-        <button class="btn-primary" onclick="switchFlavour('Matcha Zen')">View in 3D</button>
+        <p style="color:rgba(255,255,255,0.6);">Alphonso, turmeric, ginger</p>
+        <button class="btn-primary" style="margin-top:1rem; padding:0.5rem 1.6rem; font-size:0.8rem;">View in 3D</button>
       </div>
     </div>
   </section>
 
-  <!-- ====== INGREDIENTS ====== -->
-  <section id="ingredients" class="section-padding gold-border">
-    <div class="text-center">
-      <h2 class="section-title">Nature’s <span class="gold-text">Finest</span></h2>
-      <p class="section-sub">Pure, potent, and perfect</p>
-    </div>
-    <div class="ingredients-grid">
-      <div class="ingredient-card"><i class="fas fa-seedling"></i><h4>Vanilla</h4><p>Madagascar Bourbon</p></div>
-      <div class="ingredient-card"><i class="fas fa-tree"></i><h4>Cocoa</h4><p>Ecuadorian dark</p></div>
-      <div class="ingredient-card"><i class="fas fa-nut"></i><h4>Hazelnut</h4><p>Italian roasted</p></div>
-      <div class="ingredient-card"><i class="fas fa-glass-whiskey"></i><h4>Oat Milk</h4><p>Organic & creamy</p></div>
-      <div class="ingredient-card"><i class="fas fa-leaf"></i><h4>Matcha</h4><p>Ceremonial grade</p></div>
-      <div class="ingredient-card"><i class="fas fa-apple-alt"></i><h4>Natural Extracts</h4><p>No artificials</p></div>
-    </div>
-  </section>
-
-  <!-- ====== NUTRITION ====== -->
-  <section id="nutrition" class="section-padding gold-border" style="background:var(--color-secondary);">
-    <div class="text-center">
-      <h2 class="section-title">Pure <span class="gold-text">Nutrition</span></h2>
-      <p class="section-sub">Fuel your body with excellence</p>
-    </div>
-    <div class="nutrition-grid">
-      <div class="nutrition-item"><span>Calories</span><div class="nutrition-bar"><div style="width:30%;"></div></div><span>45 kcal</span></div>
-      <div class="nutrition-item"><span>Protein</span><div class="nutrition-bar"><div style="width:70%;"></div></div><span>20g</span></div>
-      <div class="nutrition-item"><span>Sugar</span><div class="nutrition-bar"><div style="width:0%;"></div></div><span>0g</span></div>
-      <div class="nutrition-item"><span>Fiber</span><div class="nutrition-bar"><div style="width:40%;"></div></div><span>8g</span></div>
-    </div>
-  </section>
-
-  <!-- ====== MANUFACTURING & SUSTAINABILITY ====== -->
-  <section id="manufacturing" class="section-padding gold-border">
-    <div class="text-center">
-      <h2 class="section-title">Crafted with <span class="gold-text">Integrity</span></h2>
-      <p class="section-sub">From farm to bottle</p>
-    </div>
-    <div class="manufacturing-grid">
-      <div class="manufacturing-card glass-card"><i class="fas fa-hand-holding-heart"></i><h4>Sustainable Sourcing</h4><p>We partner with fair‑trade farms to ensure ethical practices.</p></div>
-      <div class="manufacturing-card glass-card"><i class="fas fa-recycle"></i><h4>Eco Packaging</h4><p>100% recyclable materials, reducing carbon footprint.</p></div>
-      <div class="manufacturing-card glass-card"><i class="fas fa-certificate"></i><h4>Quality Certifications</h4><p>ISO, organic, and non‑GMO certified.</p></div>
-    </div>
-  </section>
-
-  <!-- ====== WHY CHOOSE US (Stats) ====== -->
-  <section id="why-choose" class="section-padding gold-border" style="background:var(--color-secondary);">
-    <div class="text-center">
-      <h2 class="section-title">Why <span class="gold-text">Choose Us</span></h2>
-      <p class="section-sub">The numbers speak for themselves</p>
-    </div>
-    <div class="stats-grid">
-      <div class="stat-card"><i class="fas fa-leaf"></i><div class="stat-number" data-count="100">0</div><p>% Natural</p></div>
-      <div class="stat-card"><i class="fas fa-heartbeat"></i><div class="stat-number" data-count="0">0</div><p>g Sugar</p></div>
-      <div class="stat-card"><i class="fas fa-dumbbell"></i><div class="stat-number" data-count="20">0</div><p>g Protein</p></div>
-      <div class="stat-card"><i class="fas fa-star"></i><div class="stat-number" data-count="5">0</div><p>Star Quality</p></div>
-    </div>
-  </section>
-
-  <!-- ====== GALLERY ====== -->
-  <section id="gallery" class="section-padding gold-border">
-    <div class="text-center">
-      <h2 class="section-title">Visual <span class="gold-text">Symphony</span></h2>
-      <p class="section-sub">Art in every frame</p>
-    </div>
-    <div class="gallery-masonry">
-      <div class="gallery-item"><i class="fas fa-crown"></i> Pedestal</div>
-      <div class="gallery-item"><i class="fas fa-water"></i> Splash</div>
-      <div class="gallery-item"><i class="fas fa-leaf"></i> Natural</div>
-      <div class="gallery-item"><i class="fas fa-champagne-glasses"></i> Celebration</div>
-      <div class="gallery-item"><i class="fas fa-mountain"></i> Alpine</div>
-      <div class="gallery-item"><i class="fas fa-sun"></i> Golden Hour</div>
-    </div>
-  </section>
-
-  <!-- ====== REVIEWS ====== -->
-  <section id="reviews" class="section-padding gold-border" style="background:var(--color-secondary);">
-    <div class="text-center">
-      <h2 class="section-title">What <span class="gold-text">They Say</span></h2>
-      <p class="section-sub">Voices of distinction</p>
-    </div>
-    <div class="review-slider">
-      <div class="review-card glass-card"><div class="stars">★★★★★</div><p>"The most exquisite beverage I've ever tasted. Pure royalty."</p><span>— Eleanor V.</span></div>
-      <div class="review-card glass-card"><div class="stars">★★★★★</div><p>"A masterpiece of flavour and elegance. AQUORA defines luxury."</p><span>— James W.</span></div>
-      <div class="review-card glass-card"><div class="stars">★★★★★</div><p>"Every sip is a moment of pure bliss. Absolutely divine."</p><span>— Isabella R.</span></div>
-      <div class="review-card glass-card"><div class="stars">★★★★★</div><p>"The gold standard of premium beverages. Unforgettable."</p><span>— Marcus T.</span></div>
-    </div>
-  </section>
-
-  <!-- ====== AWARDS & CERTIFICATIONS ====== -->
-  <section id="awards" class="section-padding gold-border">
-    <div class="text-center">
-      <h2 class="section-title">Awards &amp; <span class="gold-text">Recognition</span></h2>
-      <p class="section-sub">Celebrated by the world’s best</p>
-    </div>
-    <div class="awards-grid">
-      <div class="award-card"><i class="fas fa-trophy"></i><h4>Best Beverage 2025</h4><p>World Drinks Awards</p></div>
-      <div class="award-card"><i class="fas fa-medal"></i><h4>Gold Medal</h4><p>International Taste Institute</p></div>
-      <div class="award-card"><i class="fas fa-award"></i><h4>Innovation Award</h4><p>Food & Beverage Global</p></div>
-    </div>
-  </section>
-
-  <!-- ====== FAQ ====== -->
-  <section id="faq" class="section-padding gold-border" style="background:var(--color-secondary);">
-    <div class="text-center">
-      <h2 class="section-title">Curious <span class="gold-text">Minds</span></h2>
-      <p class="section-sub">Answers to your questions</p>
-    </div>
-    <div class="faq-accordion">
-      <div class="faq-item">
-        <button class="faq-question">What is AQUORA SHAKE? <i class="fas fa-plus"></i></button>
-        <div class="faq-answer"><p>A premium, natural beverage crafted with the finest ingredients to elevate your daily ritual.</p></div>
+  <!-- GALLERY (masonry) with images -->
+  <section id="gallery">
+    <div class="text-center"><h2 class="section-title">Visual <span class="gold-text">Symphony</span></h2><p class="section-sub">Art in every frame</p></div>
+    <div class="gallery-masonry mt-4">
+      <div class="gallery-item">
+        <img src="assets/images/gallery-1.jpg" alt="Gallery 1" />
+        <div class="gallery-overlay"><i class="fas fa-expand"></i></div>
       </div>
-      <div class="faq-item">
-        <button class="faq-question">Is it suitable for vegans? <i class="fas fa-plus"></i></button>
-        <div class="faq-answer"><p>Absolutely. All our flavours are 100% plant‑based and cruelty‑free.</p></div>
+      <div class="gallery-item">
+        <img src="assets/images/gallery-2.jpg" alt="Gallery 2" />
+        <div class="gallery-overlay"><i class="fas fa-expand"></i></div>
       </div>
-      <div class="faq-item">
-        <button class="faq-question">Where can I buy? <i class="fas fa-plus"></i></button>
-        <div class="faq-answer"><p>Available exclusively on our website and select luxury retailers.</p></div>
+      <div class="gallery-item">
+        <img src="assets/images/gallery-3.jpg" alt="Gallery 3" />
+        <div class="gallery-overlay"><i class="fas fa-expand"></i></div>
       </div>
-      <div class="faq-item">
-        <button class="faq-question">What is the shelf life? <i class="fas fa-plus"></i></button>
-        <div class="faq-answer"><p>12 months when stored in a cool, dry place.</p></div>
+      <div class="gallery-item">
+        <img src="assets/images/gallery-4.jpg" alt="Gallery 4" />
+        <div class="gallery-overlay"><i class="fas fa-expand"></i></div>
+      </div>
+      <div class="gallery-item">
+        <img src="assets/images/gallery-5.jpg" alt="Gallery 5" />
+        <div class="gallery-overlay"><i class="fas fa-expand"></i></div>
+      </div>
+      <div class="gallery-item">
+        <img src="assets/images/gallery-6.jpg" alt="Gallery 6" />
+        <div class="gallery-overlay"><i class="fas fa-expand"></i></div>
       </div>
     </div>
   </section>
 
-  <!-- ====== VISION & MISSION ====== -->
-  <section id="vision" class="section-padding gold-border">
-    <div class="text-center">
-      <h2 class="section-title">Vision &amp; <span class="gold-text">Mission</span></h2>
-      <p class="section-sub">Driven by purpose</p>
-    </div>
-    <div class="vision-grid">
-      <div class="vision-card glass-card"><i class="fas fa-eye"></i><h4>Vision</h4><p>To become the world’s most coveted luxury beverage brand.</p></div>
-      <div class="vision-card glass-card"><i class="fas fa-rocket"></i><h4>Mission</h4><p>To deliver unparalleled taste and quality, while nurturing the planet.</p></div>
+  <!-- CONTACT / FOOTER -->
+  <section id="contact" style="background:#0B1638;">
+    <div class="text-center"><h2 class="section-title">Reserve <span class="gold-text">Your Taste</span></h2><p class="section-sub">Let's craft something extraordinary</p></div>
+    <div style="max-width:600px; margin:2rem auto; background:rgba(255,255,255,0.02); padding:2rem; border-radius:40px; backdrop-filter:blur(12px); border:1px solid rgba(212,175,55,0.1);">
+      <input type="text" placeholder="Name" style="width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(212,175,55,0.2); padding:0.9rem; border-radius:40px; margin-bottom:1rem; color:#fff;" />
+      <input type="email" placeholder="Email" style="width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(212,175,55,0.2); padding:0.9rem; border-radius:40px; margin-bottom:1rem; color:#fff;" />
+      <button class="btn-primary" style="width:100%;">Send</button>
     </div>
   </section>
 
-  <!-- ====== CALL TO ACTION ====== -->
-  <section id="cta" class="section-padding" style="background:var(--color-secondary); text-align:center;">
-    <h2 class="section-title">Ready to <span class="gold-text">Indulge</span>?</h2>
-    <p class="section-sub" style="max-width:600px; margin:0 auto 2rem;">Join the AQUORA experience and elevate your every moment.</p>
-    <button class="btn-primary" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Order Now</button>
-  </section>
-
-  <!-- ====== CONTACT ====== -->
-  <section id="contact" class="section-padding gold-border" style="background:var(--color-primary);">
-    <div class="text-center">
-      <h2 class="section-title">Reserve <span class="gold-text">Your Taste</span></h2>
-      <p class="section-sub">Let's craft something extraordinary</p>
-    </div>
-    <div class="contact-form-wrap glass-card">
-      <input type="text" placeholder="Name" />
-      <input type="email" placeholder="Email" />
-      <textarea placeholder="Message"></textarea>
-      <button class="btn-primary">Send</button>
-    </div>
-  </section>
-
-  <!-- ====== FOOTER ====== -->
   <footer>
-    <div class="footer-col">
-      <h4>✦ AQUORA</h4>
-      <p>Luxury beverage<br />since 2026</p>
-      <div class="social-icons">
-        <a href="#"><i class="fab fa-instagram"></i></a>
-        <a href="#"><i class="fab fa-twitter"></i></a>
-        <a href="#"><i class="fab fa-youtube"></i></a>
-        <a href="#"><i class="fab fa-facebook"></i></a>
-      </div>
-    </div>
-    <div class="footer-col">
-      <h4>Quick</h4>
-      <a href="#about">About</a>
-      <a href="#flavours">Flavours</a>
-      <a href="#gallery">Gallery</a>
-      <a href="#contact">Contact</a>
-    </div>
-    <div class="footer-col">
-      <h4>Legal</h4>
-      <a href="#">Privacy</a>
-      <a href="#">Terms</a>
-      <a href="#">Cookies</a>
-    </div>
-    <div class="footer-col">
-      <h4>Newsletter</h4>
-      <input type="email" placeholder="Your email" class="newsletter-input" />
-      <button class="btn-subscribe">Subscribe</button>
-    </div>
+    <div class="footer-col"><h4>✦ AQUORA</h4><p style="color:rgba(255,255,255,0.4);">Luxury beverage<br />since 2026</p></div>
+    <div class="footer-col"><h4>Quick</h4><a href="#">Flavours</a><a href="#">Story</a><a href="#">Gallery</a></div>
+    <div class="footer-col"><h4>Legal</h4><a href="#">Privacy</a><a href="#">Terms</a></div>
+    <div class="footer-col"><h4>Newsletter</h4><input type="email" placeholder="Your email" /><button style="margin-top:0.6rem; background:#D4AF37; border:none; padding:0.4rem 1.2rem; border-radius:40px; color:#081321;">Subscribe</button></div>
   </footer>
 
-  <!-- ====== SCRIPTS ====== -->
-  <script src="script.js"></script>
-  <script nomodule>
-    console.warn('Please use a modern browser.');
+  <!-- Three.js & GSAP (via CDN) -->
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    // setup scene
+    const canvas = document.getElementById('three-canvas');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x081321);
+    const camera = new THREE.PerspectiveCamera(45, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+    camera.position.set(2, 1, 4);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    canvas.appendChild(renderer.domElement);
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 1.8;
+    controls.enableZoom = true;
+    controls.target.set(0, 0.2, 0);
+    // lights
+    const ambient = new THREE.AmbientLight(0x404060);
+    scene.add(ambient);
+    const keyLight = new THREE.DirectionalLight(0xffeebb, 1);
+    keyLight.position.set(2, 3, 4);
+    keyLight.castShadow = true;
+    scene.add(keyLight);
+    const fillLight = new THREE.DirectionalLight(0x4466ff, 0.5);
+    fillLight.position.set(-2, 1, -3);
+    scene.add(fillLight);
+    const goldLight = new THREE.PointLight(0xD4AF37, 0.8, 6);
+    goldLight.position.set(0, 1, 2);
+    scene.add(goldLight);
+    // product can (cylinder with gold cap)
+    const group = new THREE.Group();
+    const bodyGeo = new THREE.CylinderGeometry(0.9, 0.9, 1.8, 32);
+    const bodyMat = new THREE.MeshStandardMaterial({ color: 0x2a3f5e, roughness: 0.3, metalness: 0.4, emissive: new THREE.Color(0x0B1638), emissiveIntensity: 0.2 });
+    const body = new THREE.Mesh(bodyGeo, bodyMat);
+    body.castShadow = true;
+    body.receiveShadow = true;
+    group.add(body);
+    const capGeo = new THREE.CylinderGeometry(0.65, 0.7, 0.3, 24);
+    const capMat = new THREE.MeshStandardMaterial({ color: 0xD4AF37, roughness: 0.2, metalness: 0.8, emissive: new THREE.Color(0x553311), emissiveIntensity: 0.1 });
+    const cap = new THREE.Mesh(capGeo, capMat);
+    cap.position.y = 1.05;
+    cap.castShadow = true;
+    group.add(cap);
+    // label detail
+    const label = new THREE.Mesh(new THREE.CylinderGeometry(0.82, 0.82, 0.5, 24), new THREE.MeshStandardMaterial({ color: 0xc49b3f, roughness: 0.3, metalness: 0.1 }));
+    label.position.y = 0.1;
+    group.add(label);
+    const stripe = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 0.85, 0.05, 32), new THREE.MeshStandardMaterial({ color: 0xD4AF37, emissive: new THREE.Color(0xD4AF37), emissiveIntensity: 0.15 }));
+    stripe.position.y = -0.4;
+    group.add(stripe);
+    scene.add(group);
+    // ground reflection / shadow
+    const planeGeo = new THREE.CircleGeometry(2.2, 20);
+    const planeMat = new THREE.MeshStandardMaterial({ color: 0x081321, transparent: true, opacity: 0.3, side: THREE.DoubleSide });
+    const plane = new THREE.Mesh(planeGeo, planeMat);
+    plane.rotation.x = -Math.PI / 2;
+    plane.position.y = -1.0;
+    plane.receiveShadow = true;
+    scene.add(plane);
+
+    // floating particles gold
+    const particleCount = 40;
+    const particleGeo = new THREE.BufferGeometry();
+    const positions = new Float32Array(particleCount * 3);
+    for (let i = 0; i < particleCount * 3; i += 3) {
+      positions[i] = (Math.random() - 0.5) * 8;
+      positions[i+1] = (Math.random() - 0.5) * 4 + 1;
+      positions[i+2] = (Math.random() - 0.5) * 6;
+    }
+    particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const particleMat = new THREE.PointsMaterial({ color: 0xD4AF37, size: 0.06, transparent: true, opacity: 0.5 });
+    const particles = new THREE.Points(particleGeo, particleMat);
+    scene.add(particles);
+
+    // animation loop
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      group.rotation.y += 0.002;
+      particles.rotation.y += 0.0005;
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    // resize
+    window.addEventListener('resize', () => {
+      const w = canvas.clientWidth, h = canvas.clientHeight;
+      renderer.setSize(w, h);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    });
+  </script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script>
+    // loader
+    let progress = 0;
+    const bar = document.getElementById('loaderBar');
+    const pct = document.getElementById('loaderPercent');
+    const loader = document.getElementById('loader');
+    const interval = setInterval(() => {
+      progress += Math.random() * 12;
+      if (progress >= 100) { progress = 100; clearInterval(interval); }
+      bar.style.width = progress + '%';
+      pct.textContent = Math.floor(progress) + '%';
+      if (progress === 100) { setTimeout(() => loader.classList.add('hide'), 400); }
+    }, 180);
+
+    // hamburger
+    const hamburger = document.getElementById('hamburger');
+    const mobileMenu = document.getElementById('mobileMenu');
+    hamburger.addEventListener('click', () => mobileMenu.classList.toggle('open'));
+
+    // smooth scroll (lenis-like via gsap)
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if(target) { window.scrollTo({ top: target.offsetTop - 80, behavior: 'smooth' }); }
+        mobileMenu.classList.remove('open');
+      });
+    });
+
+    // floating gold particles (dynamic)
+    for (let i = 0; i < 30; i++) {
+      const el = document.createElement('div');
+      el.className = 'particle-gold';
+      el.style.left = Math.random() * 100 + '%';
+      el.style.top = Math.random() * 100 + '%';
+      el.style.animation = `floatGold ${4 + Math.random() * 8}s infinite alternate ease-in-out`;
+      el.style.width = el.style.height = (2 + Math.random() * 5) + 'px';
+      document.body.appendChild(el);
+    }
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes floatGold { 0% { transform: translate(0,0) scale(1); opacity:0.2; } 100% { transform: translate(${Math.random()>0.5?'-30px':'30px'}, -40px) scale(1.6); opacity:0.7; } }
+    `;
+    document.head.appendChild(style);
+
+    // GSAP reveals
+    gsap.utils.toArray('.flavour-card, .gallery-item, .section-title').forEach(el => {
+      gsap.from(el, { scrollTrigger: { trigger: el, start: 'top 85%' }, duration: 0.9, opacity: 0, y: 30, ease: 'power2.out' });
+    });
   </script>
 </body>
 </html>
